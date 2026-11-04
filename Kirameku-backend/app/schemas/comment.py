@@ -13,6 +13,7 @@ class CommentCreate(BaseModel):
     post_id: int
     parent_id: int | None = None
     content: str
+    nickname: str | None = None
 
 
 class CommentOut(BaseModel):
@@ -23,6 +24,7 @@ class CommentOut(BaseModel):
     likes: int = 0
     status: str
     created_at: datetime
+    nickname: str = ""
     github_user: GitHubUserOut | None = None
     replies: list["CommentOut"] = []
 
@@ -46,6 +48,7 @@ class MessageOut(BaseModel):
     status: str
     likes: int
     created_at: datetime
+    nickname: str = ""
     github_user: GitHubUserOut | None = None
     replies: list["MessageOut"] = []
 

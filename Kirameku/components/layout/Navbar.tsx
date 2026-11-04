@@ -11,35 +11,23 @@ import {
   Home,
   BookOpen,
   MessageSquare,
-  Newspaper,
   FolderGit2,
-  Users,
-  Camera,
   Clock,
   Music,
-  User,
   Sun,
   Moon,
   Menu,
   X,
   Settings,
-  Library,
-  Bookmark,
 } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "首页", icon: Home },
   { href: "/posts", label: "文章", icon: BookOpen },
   { href: "/moments", label: "说说", icon: MessageSquare },
-  { href: "/messages", label: "留言", icon: Newspaper },
-  { href: "/novel", label: "小说", icon: Library },
-  { href: "/bookmark", label: "收藏夹", icon: Bookmark },
   { href: "/projects", label: "项目", icon: FolderGit2 },
-  { href: "/friends", label: "友链", icon: Users },
-  { href: "/photowall", label: "照片墙", icon: Camera },
   { href: "/timeline", label: "归档", icon: Clock },
   { href: "/music", label: "音乐", icon: Music },
-  { href: "/about", label: "关于", icon: User },
 ];
 
 export default function Navbar() {
@@ -202,13 +190,7 @@ export default function Navbar() {
               style={easterEgg ? { animation: "spin 0.5s ease-in-out 6, rainbow 3s linear" } : undefined}
             >
               <span className={`text-xl font-bold tracking-tight ${easterEgg ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" : "text-slate-800 dark:text-white"}`} style={{ fontFamily: "'Noto Serif SC', serif" }}>
-                Starhiro
-              </span>
-              <span className={`text-xl font-bold ${easterEgg ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" : "text-sky-500 dark:text-sky-400"}`} style={{ fontFamily: "serif" }}>
-                の
-              </span>
-              <span className={`text-xl font-bold tracking-tight ${easterEgg ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" : "text-slate-800 dark:text-white"}`} style={{ fontFamily: "'Noto Serif SC', serif" }}>
-                小站
+                AYu Blog
               </span>
             </Link>
 

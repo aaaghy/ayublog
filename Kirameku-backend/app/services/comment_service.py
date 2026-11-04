@@ -15,12 +15,15 @@ def _comment_to_dict(session: Session, c: Comment, include_ip: bool = False, fet
         "likes": c.likes,
         "status": c.status,
         "created_at": c.created_at,
+        "nickname": c.nickname or "",
         "github_user": {
             "id": gh_user.id,
             "login": gh_user.login,
             "avatar": gh_user.avatar,
             "bio": gh_user.bio,
-        } if gh_user else None,
+        } if gh_user else (
+            {"id": 0, "login": c.nickname, "avatar": "", "bio": ""} if c.nickname else None
+        ),
         "replies": [],
     }
     if include_ip:
@@ -81,9 +84,13 @@ def create_comment(
     github_user: GitHubUser | None = None,
     ip: str = "",
 ) -> dict:
+    nickname = (data.nickname or "").strip()
+    content = (data.content or "").strip()
+    if not content or len(content) > 1000:
+        raise HTTPException(400, "评论不能为空，且不超过 1000 字")
     if not github_user:
-        raise HTTPException(401, "请先登录 GitHub")
-
+        if not nickname or len(nickname) > 20:
+            raise HTTPException(400, "请填写昵称，最多 20 个字")
     if data.parent_id:
         parent = session.get(Comment, data.parent_id)
         if not parent:
@@ -92,8 +99,9 @@ def create_comment(
     comment = Comment(
         post_id=data.post_id,
         parent_id=data.parent_id,
-        github_user_id=github_user.id,
-        content=data.content,
+        github_user_id=github_user.id if github_user else None,
+        nickname="" if github_user else nickname,
+        content=content,
         ip=ip,
     )
     session.add(comment)

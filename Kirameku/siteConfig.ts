@@ -2,13 +2,13 @@
 
 export const siteConfig = {
   // 网站标题与博主信息
-  title: "Starhiroの小站",
-  url: "https://boke.hiromu.top",
-  authorName: "Starhiro",
-  bio: "项目开源在 GitHub,点击下面的GitHub图标跳转,欢迎 star 和 fork！(◕‿◕)",
+  title: "AYu Blog",
+  url: "https://www.ayublog.me",
+  authorName: "Ayu",
+  bio: "欢迎参观Ayu的博客",
 
   // 头像设置
-  avatarUrl: "/images/hong.jpg",
+  avatarUrl: "/images/avatar.jpg",
 
   // 背景设置
   useGradient: false,
@@ -30,7 +30,7 @@ export const siteConfig = {
 
   // 云音乐配置（网易云音乐）
   // 填歌单 ID 则自动拉取整个歌单，填歌曲 ID 列表则只播放指定歌曲
-  cloudMusicPlaylistId: "17943739323",  // 歌单 ID（优先）
+  cloudMusicPlaylistId: "18534238853",  // 歌单 ID（优先）
   cloudMusicIds: [],                     // 歌曲 ID 列表（歌单为空时使用）
 
   // 后端 API 地址（留空，开发通过 next.config.ts rewrites 代理，生产通过 Nginx 反代）
@@ -54,11 +54,11 @@ export const siteConfig = {
     { name: "Tailwind 4", color: "text-teal-400" },
   ],
   icpConfig: {
-    name: "赣ICP备2025078417号",
+    name: "",
     link: "https://beian.miit.gov.cn/",
   },
   moeIcpConfig: {
-    name: "萌ICP备20260527号",
+    name: "",
     link: "https://icp.gov.moe/?keyword=20260527",
   },
 

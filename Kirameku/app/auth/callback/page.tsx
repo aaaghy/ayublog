@@ -12,11 +12,11 @@ export default function AuthCallbackPage() {
     const token = searchParams.get("token");
     if (token) {
       localStorage.setItem("github_token", token);
-      const redirectTo = sessionStorage.getItem("github_redirect") || "/messages";
+      const redirectTo = sessionStorage.getItem("github_redirect") || "/";
       sessionStorage.removeItem("github_redirect");
       router.replace(redirectTo);
     } else {
-      router.replace("/messages");
+      router.replace("/");
     }
   }, [searchParams, router]);
 

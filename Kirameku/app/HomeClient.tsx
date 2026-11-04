@@ -9,8 +9,6 @@ const CloudPlayer = dynamic(() => import("@/components/music/CloudPlayer"), { ss
 const LyricBar = dynamic(() => import("@/components/music/LyricBar"), { ssr: false });
 const LatestPostsCarousel = dynamic(() => import("@/components/home/LatestPostsCarousel"), { ssr: false });
 const LatestChatterCarousel = dynamic(() => import("@/components/home/LatestChatterCarousel"), { ssr: false });
-const PhotoWallPreview = dynamic(() => import("@/components/home/PhotoWallPreview"), { ssr: false });
-const DogDiary = dynamic(() => import("@/components/home/DogDiary"), { ssr: false });
 const SiteDashboard = dynamic(() => import("@/components/widgets/SiteDashboard"), { ssr: false });
 
 export default function HomeClient({
@@ -58,18 +56,10 @@ export default function HomeClient({
         {/* 第二行：照片墙 + 文章 + 说说 + 舔狗日记 */}
         <FadeIn delay={0.2}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 w-full items-stretch">
-            <div className="md:col-span-4 h-full">
-              <PhotoWallPreview />
-            </div>
-            <div className="md:col-span-8 flex flex-col gap-4 md:gap-6 h-full">
+            <div className="md:col-span-12 flex flex-col gap-4 md:gap-6 h-full">
               <LatestPostsCarousel />
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 flex-1 md:min-h-[220px] items-stretch">
-                <div className="md:col-span-8 h-full">
-                  <LatestChatterCarousel />
-                </div>
-                <div className="md:col-span-4 h-full flex">
-                  <DogDiary />
-                </div>
+              <div className="flex-1 md:min-h-[220px] h-full">
+                <LatestChatterCarousel />
               </div>
             </div>
           </div>

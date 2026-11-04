@@ -10,6 +10,7 @@ class Comment(SQLModel, table=True):
     post_id: int = Field(foreign_key="post.id", index=True)
     parent_id: Optional[int] = Field(default=None, foreign_key="comment.id")
     github_user_id: Optional[int] = Field(default=None, foreign_key="github_user.id", index=True)
+    nickname: str = Field(default="", max_length=50)
     content: str
     likes: int = Field(default=0)
     ip: str = Field(default="", max_length=45)

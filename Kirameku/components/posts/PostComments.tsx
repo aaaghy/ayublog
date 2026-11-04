@@ -30,7 +30,7 @@ function flattenReplies(
     const replyToUser = map.get(r.parent_id!);
     result.push(replyToUser ? { ...r, replyToUser } : r);
     if (r.replies?.length) {
-      map.set(r.id, r.github_user?.login ?? "匿名用户");
+      map.set(r.id, r.nickname || r.github_user?.login || "匿名用户");
       result.push(...flattenReplies(r.replies, map));
     }
   }
@@ -67,6 +67,10 @@ export default function PostComments({ postId }: { postId: number }) {
     return null;
   });
   const [inputValue, setInputValue] = useState("");
+  const [nickname, setNickname] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("comment_nickname") || "";
+  });
   const [replyTo, setReplyTo] = useState<CommentItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
@@ -125,10 +129,17 @@ export default function PostComments({ postId }: { postId: number }) {
     if (!inputValue.trim() || submitting) return;
     setSubmitting(true);
     try {
+      const name = nickname.trim();
+      if (!user && !name) {
+        alert("请填写昵称");
+        return;
+      }
+      if (!user) localStorage.setItem("comment_nickname", name);
       const newComment = await createComment({
         post_id: postId,
         content: inputValue.trim(),
         parent_id: replyTo?.id,
+        nickname: user ? undefined : name,
       });
       if (replyTo) {
         const parentId = findTopLevelId(comments, replyTo.id) ?? replyTo.id;
@@ -256,23 +267,13 @@ export default function PostComments({ postId }: { postId: number }) {
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={handleLogin}
-            className="flex items-center gap-2 md:gap-3 px-3 py-2 md:px-5 md:py-3 rounded-2xl bg-white/50 dark:bg-slate-800/60 backdrop-blur-xl border border-white/30 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-600 transition-all group w-full"
-          >
-            <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-slate-900 dark:bg-white flex items-center justify-center">
-              <GithubIcon className="w-4 h-4 md:w-5 md:h-5 text-white dark:text-slate-900" />
-            </div>
-            <div className="text-left">
-              <div className="text-xs md:text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-                登录 GitHub
-              </div>
-              <div className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">
-                登录后即可评论和回复
-              </div>
-            </div>
-          </button>
+          <input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            maxLength={20}
+            placeholder="昵称，不用登录也能评论"
+            className="w-full px-3 py-2 md:px-5 md:py-3 rounded-2xl bg-white/50 dark:bg-slate-800/60 backdrop-blur-xl border border-white/30 dark:border-white/10 text-sm text-slate-800 dark:text-slate-100 outline-none"
+          />
         )}
       </motion.div>
 
@@ -297,7 +298,7 @@ export default function PostComments({ postId }: { postId: number }) {
                   <span>
                     回复{" "}
                     <span className="font-medium text-sky-600 dark:text-sky-400">
-                      {replyTo.github_user?.login ?? "匿名"}
+                      {replyTo.nickname || replyTo.github_user?.login || "匿名"}
                     </span>
                   </span>
                   <span className="truncate flex-1 opacity-60">
@@ -320,14 +321,7 @@ export default function PostComments({ postId }: { postId: number }) {
               ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={
-                user
-                  ? replyTo
-                    ? "写下你的回复..."
-                    : "说点什么吧..."
-                  : "登录后即可评论..."
-              }
-              disabled={!user}
+              placeholder={replyTo ? "写下你的回复..." : "说点什么吧..."}
               rows={3}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -343,7 +337,7 @@ export default function PostComments({ postId }: { postId: number }) {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={!user || !inputValue.trim() || submitting}
+                disabled={(!user && !nickname.trim()) || !inputValue.trim() || submitting}
                 className="flex items-center gap-1 md:gap-1.5 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-sky-500 text-white text-[10px] md:text-xs font-medium hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 <Send className="w-3 h-3 md:w-3.5 md:h-3.5" />
@@ -458,7 +452,7 @@ function CommentCard({
           )}
           <div className="flex-1 min-w-0">
             <span className="text-xs md:text-sm font-semibold text-slate-800 dark:text-slate-200">
-              {comment.github_user?.login ?? "匿名用户"}
+              {comment.nickname || comment.github_user?.login || "匿名用户"}
             </span>
             {comment.github_user?.bio && (
               <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 truncate">
@@ -576,7 +570,7 @@ function ReplyCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
             <span className="text-[10px] md:text-xs font-semibold text-slate-700 dark:text-slate-300">
-              {reply.github_user?.login ?? "匿名用户"}
+              {reply.nickname || reply.github_user?.login || "匿名用户"}
             </span>
             <span className="text-[10px] md:text-xs text-slate-400">
               {relativeTime(reply.created_at)}

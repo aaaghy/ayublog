@@ -1,91 +1,49 @@
-import { NextRequest, NextResponse } from "next/server";
-import Meting from "@meting/core";
+import { readdir } from "fs/promises";
+import path from "path";
+import { NextResponse } from "next/server";
 
-interface SongData {
-  id: string;
-  title: string;
-  artist: string;
-  cover: string;
-  src: string;
-  lrcUrl: string;
+export const dynamic = "force-dynamic";
+
+const MUSIC_DIR = "/www/wwwroot/music";
+const AUDIO = new Set([".mp3", ".flac", ".wav", ".m4a", ".ogg", ".aac"]);
+
+function encodeName(name: string) {
+  return encodeURIComponent(name);
 }
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const playlistId = searchParams.get("id");
-  const songIds = searchParams.get("ids");
-
-  if (!playlistId && !songIds) {
-    return NextResponse.json(
-      { error: "需要提供 id (歌单ID) 或 ids (歌曲ID,逗号分隔)" },
-      { status: 400 }
-    );
+function parseName(filename: string) {
+  const base = path.basename(filename, path.extname(filename));
+  const parts = base.split(/\s*[-–—]\s*/);
+  if (parts.length >= 2) {
+    return { title: parts.slice(0, -1).join("-"), artist: parts[parts.length - 1] };
   }
+  return { title: base, artist: "未知歌手" };
+}
 
-  const meting = new Meting("netease");
-  meting.format(true);
-
+export async function GET() {
+  let entries: string[] = [];
   try {
-    let tracks: { id: string; name: string; artist: string[]; pic_id: string; url_id: string; lyric_id: string }[] = [];
-
-    if (playlistId) {
-      const raw = await meting.playlist(playlistId);
-      const parsed = JSON.parse(raw as string);
-      tracks = Array.isArray(parsed) ? parsed : [];
-    } else if (songIds) {
-      const ids = songIds.split(",").map((s) => s.trim()).filter(Boolean);
-      const results = await Promise.all(
-        ids.map(async (id) => {
-          try {
-            const raw = await meting.song(id);
-            const parsed = JSON.parse(raw as string);
-            return Array.isArray(parsed) ? parsed : [parsed];
-          } catch {
-            return [];
-          }
-        })
-      );
-      tracks = results.flat();
-    }
-
-    // 批量获取 URL
-    const songs: SongData[] = await Promise.all(
-      tracks.map(async (track) => {
-        let src = "";
-        try {
-          const urlRaw = await meting.url(track.url_id, 320);
-          const urlData = JSON.parse(urlRaw as string);
-          src = (urlData.url || "").replace(/^http:\/\//, "https://");
-        } catch {
-          // ignore
-        }
-
-        let cover = "";
-        try {
-          const picRaw = await meting.pic(track.pic_id, 300);
-          const picData = JSON.parse(picRaw as string);
-          cover = (picData.url || "").replace(/^http:\/\//, "https://");
-        } catch {
-          // ignore
-        }
-
-        return {
-          id: String(track.id),
-          title: track.name || "未知歌曲",
-          artist: Array.isArray(track.artist) ? track.artist.join(", ") : String(track.artist || "未知歌手"),
-          cover,
-          src,
-          lrcUrl: track.lyric_id ? `https://api.injahow.cn/meting/?server=netease&type=lrc&id=${track.lyric_id}` : "",
-        };
-      })
-    );
-
-    return NextResponse.json(songs.filter((s) => s.src));
-  } catch (err) {
-    console.error("Meting error:", err);
-    return NextResponse.json(
-      { error: "获取音乐数据失败" },
-      { status: 500 }
-    );
+    entries = await readdir(MUSIC_DIR);
+  } catch {
+    return NextResponse.json([]);
   }
+
+  const songs = entries
+    .filter((file) => AUDIO.has(path.extname(file).toLowerCase()))
+    .sort((a, b) => a.localeCompare(b, "zh"))
+    .map((file) => {
+      const { artist, title } = parseName(file);
+      const base = path.basename(file, path.extname(file));
+      const lrcName = entries.find((name) => name.toLowerCase() === `${base}.lrc`.toLowerCase());
+      return {
+        id: encodeName(file),
+        title,
+        artist,
+        cover: "/icon.png",
+        src: `/local-music/${encodeName(file)}`,
+        lrcUrl: lrcName ? `/local-music/${encodeName(lrcName)}` : "",
+      };
+    });
+
+  return NextResponse.json(songs);
 }

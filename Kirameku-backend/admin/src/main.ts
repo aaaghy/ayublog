@@ -49,8 +49,8 @@ app.component("Auth", Auth);
 app.component("Perms", Perms);
 
 // 全局注册vue-tippy
-import "tippy.js/dist/tippy.css";
-import "tippy.js/themes/light.css";
+import "../node_modules/tippy.js/dist/tippy.css";
+import "../node_modules/tippy.js/themes/light.css";
 import VueTippy from "vue-tippy";
 app.use(VueTippy);
 
